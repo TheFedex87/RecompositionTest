@@ -38,20 +38,26 @@ class MainViewModel : ViewModel() {
         state = state.copy(
             selectedOption = option
         )
+        viewModelScope.launch {
+            delay(100)
+            state = state.copy(
+                values = listOf(
+                    MyObject(text = "Text1", value = if(state.values.first().value == 1) 2 else 1),
+                    MyObject(text = "Text2", value = 2)
+                ),
+            )
+        }
+    }
+
+    fun selectedValueChanged(selectedValue: MyObject) {
+        state = state.copy(
+            selectedValue = selectedValue
+        )
     }
 
     fun changeColor(color: Color) {
         state = state.copy(
             color = color
         )
-        viewModelScope.launch {
-            delay(100)
-            state = state.copy(
-                values = listOf(
-                    MyObject(text = "Text1", value = 1),
-                    MyObject(text = "Text2", value = 3)
-                ),
-            )
-        }
     }
 }

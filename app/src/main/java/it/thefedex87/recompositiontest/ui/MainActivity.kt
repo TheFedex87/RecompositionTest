@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,47 +51,40 @@ class MainActivity : ComponentActivity() {
                     val viewModel: MainViewModel = viewModel()
                     val state = viewModel.state
 
-                    val painter = rememberAsyncImagePainter(
+                    /*val painter = rememberAsyncImagePainter(
                         model = R.drawable.test,
                         contentScale = ContentScale.FillBounds
-                    )
+                    )*/
 
                     val pagerState = rememberPagerState()
                     LaunchedEffect(key1 = true) {
                         snapshotFlow { pagerState.currentPage }.distinctUntilChanged().collect {
-                            }
+                            viewModel.selectedValueChanged(state.values[it])
+                        }
                     }
 
-                    Image(
+                    /*Image(
                         painter = painter,
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
                         alpha = 0.6f
-                    )
+                    )*/
 
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = state.value.toString(),
-                            style = TextStyle(fontSize = 150.sp)
+                        Counter(
+                            onDecrement = { viewModel.decrement()},
+                            onIncrement = { viewModel.increment() },
+                            value = state.value.toString()
                         )
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround
-                        ) {
-                            Button(onClick = {
-                                viewModel.decrement()
-                            }) {
-                                Text(text = "Decrement")
-                            }
-                            Button(onClick = {
-                                viewModel.increment()
-                            }) {
-                                Text(text = "Increment")
-                            }
+
+                        state.selectedValue?.let {
+                            Text(
+                                text = it.text,
+                                fontSize = 50.sp
+                            )
                         }
 
                         SegmentedButton(
@@ -105,8 +99,9 @@ class MainActivity : ComponentActivity() {
                             },
                             modifier = Modifier
                                 .height(30.dp)
-                                .weight(1f)
                         )
+                        
+
 
                         HorizontalPager(
                             modifier = Modifier
@@ -130,8 +125,45 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+fun Counter(
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit,
+    value: String
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.Create,
+            contentDescription = null,
+            modifier = Modifier
+                .size(50.dp)
+                .clickable { }
+        )
+        Text(
+            text = value,
+            style = TextStyle(fontSize = 150.sp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Button(onClick = onDecrement) {
+                Text(text = "Decrement")
+            }
+            Button(onClick = onIncrement) {
+                Text(text = "Increment")
+            }
+        }
+    }
+}
+
+@Composable
 fun MyItem(
-    myObject: MyObject
+    myObject: MyObject,
+    modifier: Modifier = Modifier
 ) {
     Text(text = myObject.text)
 }
@@ -189,7 +221,9 @@ fun SegmentedButton(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         options.forEachIndexed { index, option ->
