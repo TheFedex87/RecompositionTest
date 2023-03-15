@@ -13,8 +13,8 @@ class MainViewModel : ViewModel() {
     var state by mutableStateOf(
         MainScreenState(
             values = listOf(
-                MyObject(text = "Text1", value = 1),
-                MyObject(text = "Text2", value = 2)
+                MyObject(text = "Text1", value = 1, isFavorite = false),
+                MyObject(text = "Text2", value = 2, isFavorite = true)
             ),
             color = Color.Red
         )
@@ -38,15 +38,15 @@ class MainViewModel : ViewModel() {
         state = state.copy(
             selectedOption = option
         )
-        viewModelScope.launch {
+        /*viewModelScope.launch {
             delay(100)
             state = state.copy(
                 values = listOf(
-                    MyObject(text = "Text1", value = if(state.values.first().value == 1) 2 else 1),
-                    MyObject(text = "Text2", value = 2)
+                    MyObject(text = "Text1", value = if(state.values.first().value == 1) 2 else 1, isFavorite = false),
+                    MyObject(text = "Text2", value = 2, isFavorite = true)
                 ),
             )
-        }
+        }*/
     }
 
     fun selectedValueChanged(selectedValue: MyObject) {

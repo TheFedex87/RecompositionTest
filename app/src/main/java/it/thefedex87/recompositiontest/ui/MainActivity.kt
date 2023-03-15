@@ -1,38 +1,31 @@
 package it.thefedex87.recompositiontest.ui
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import it.thefedex87.recompositiontest.R
 import it.thefedex87.recompositiontest.ui.theme.RecompositionTestTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.random.Random
@@ -46,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     val viewModel: MainViewModel = viewModel()
                     val state = viewModel.state
@@ -74,11 +67,15 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Counter(
-                            onDecrement = { viewModel.decrement()},
-                            onIncrement = { viewModel.increment() },
-                            value = state.value.toString()
-                        )
+                        /*state.selectedValue?.let {
+                            Counter(
+                                onDecrement = viewModel::decrement,
+                                onIncrement = { viewModel.increment() },
+                                value = state.value.toString(),
+                                myObject = it
+                            )
+                        }*/
+
 
                         state.selectedValue?.let {
                             Text(
@@ -100,7 +97,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .height(30.dp)
                         )
-                        
+
 
 
                         HorizontalPager(
@@ -114,7 +111,10 @@ class MainActivity : ComponentActivity() {
                             state = pagerState
                         ) { page ->
                             MyItem(
-                                myObject = state.values[page]
+                                myObject = state.values[page],
+                                onDecrement = viewModel::decrement,
+                                onIncrement = viewModel::increment,
+                                value = state.value.toString()
                             )
                         }
                     }
@@ -128,21 +128,25 @@ class MainActivity : ComponentActivity() {
 fun Counter(
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
-    value: String
+    value: String,
+    myObject: MyObject
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.Create,
-            contentDescription = null,
+            imageVector = if(myObject.value == 3) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            contentDescription = "Favorite",
             modifier = Modifier
-                .size(50.dp)
-                .clickable { }
+                .clickable {
+                    onDecrement()
+                }
+                .size(100.dp)
         )
+
         Text(
-            text = value,
+            text = myObject.value.toString(),
             style = TextStyle(fontSize = 150.sp)
         )
         Row(
@@ -150,10 +154,10 @@ fun Counter(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Button(onClick = onDecrement) {
+            Button(onClick = { onDecrement() }) {
                 Text(text = "Decrement")
             }
-            Button(onClick = onIncrement) {
+            Button(onClick = { onIncrement() }) {
                 Text(text = "Increment")
             }
         }
@@ -163,14 +167,30 @@ fun Counter(
 @Composable
 fun MyItem(
     myObject: MyObject,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit,
+    value: String
 ) {
-    Text(text = myObject.text)
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = myObject.text)
+        Counter(
+            onDecrement = onDecrement,
+            onIncrement = onIncrement,
+            value = value,
+            myObject = myObject
+        )
+    }
+
 }
 
 data class MyObject(
     val text: String,
-    val value: Int
+    val value: Int,
+    val isFavorite: Boolean
 )
 
 @Composable
@@ -233,7 +253,7 @@ fun SegmentedButton(
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = if (selectedOption == index) Color.Green else Color.Red
+                    containerColor = if (selectedOption == index) Color.Green else Color.Red
                 ),
                 shape = when (index) {
                     0 -> {
